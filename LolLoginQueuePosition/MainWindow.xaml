@@ -1,0 +1,16 @@
+﻿<Window x:Class="LolLoginQueuePosition.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:LolLoginQueuePosition"
+        mc:Ignorable="d" Height="241.85" Width="259.471" Topmost="True" Title="LoLLoginQueuePosition" ResizeMode="NoResize">
+    <Grid>
+        <Label Content="Current queue position:" HorizontalAlignment="Center" Margin="10,10,10.2,0" VerticalAlignment="Top" Width="179" HorizontalContentAlignment="Center"/>
+        <Label x:Name="currentPosLabel" Content="0" HorizontalAlignment="Center" Margin="10,35,9.8,0" VerticalAlignment="Top" Width="233" HorizontalContentAlignment="Center" FontSize="60"/>
+        <Button x:Name="folderChooser" Content="Choose Log File" HorizontalAlignment="Center" Margin="10,171,9.8,0" VerticalAlignment="Top" Click="Button_Click" Width="233" MinWidth="1"/>
+        <Label Content="Estimated remaining time:" HorizontalAlignment="Center" Margin="37,114,36.8,0" VerticalAlignment="Top" Width="179" HorizontalContentAlignment="Center"/>
+        <Label x:Name="estimationLabel" Content="0" HorizontalAlignment="Center" Margin="10,139,9.8,0" VerticalAlignment="Top" Width="233" HorizontalContentAlignment="Center"/>
+
+    </Grid>
+</Window>

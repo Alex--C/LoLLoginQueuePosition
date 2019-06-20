@@ -1,0 +1,2 @@
+# LoLLoginQueuePosition
+Probably useless.

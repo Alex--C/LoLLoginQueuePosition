@@ -88,12 +88,21 @@ namespace LolLoginQueuePosition
             if (lastTimestampMatch.Success)
             {
                 int lastTimestamp = Int32.Parse(lastTimestampMatch.Groups[1].Value);
-                dispatcherTimer.Interval = new TimeSpan(0, 0, newInterval + 10 - (lastTimestamp - newIntervalReadAt));
+                int nextInt = newInterval + 10 - (lastTimestamp - newIntervalReadAt);
+                if (nextInt < 1)
+                {
+                    nextInt = 1;
+                }
+                dispatcherTimer.Interval = new TimeSpan(0, 0, nextInt);
                 Debug.WriteLine("Next tick in {0}", newInterval + 10 - (lastTimestamp - newIntervalReadAt));
 
                 int positionsGained = lastPosition - newPosition;
                 int timePassed = newPositionReadAt - lastPositionReadAt;
-                float factor = newPosition / positionsGained;
+                float factor = 1;
+                if (positionsGained != 0)
+                {
+                    factor = newPosition / positionsGained;
+                }
                 Debug.WriteLine("Gained {0} positions in {1} seconds.", positionsGained, timePassed);
                 float totalTime = factor * timePassed;
                 estimationLabel.Content = string.Format("{0} seconds ({1} minutes)", totalTime, totalTime / 60);

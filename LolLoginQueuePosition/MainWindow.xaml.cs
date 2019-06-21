@@ -1,42 +1,36 @@
-﻿using Microsoft.Win32;
-using System;
-using System.Collections.Generic;
+﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Windows.Forms;
-using System.Windows.Threading;
 using System.Text.RegularExpressions;
+using System.Windows;
+using System.Windows.Forms;
+using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace LolLoginQueuePosition
 {
     /// <summary>
     /// Interaktionslogik für MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
         private StreamReader logFileReader;
         private DispatcherTimer dispatcherTimer;
         private int lastPosition;
         private int lastPositionReadAt;
+        private SlidingWindow<int> slidingWindow;
+
+        public Color SlidingWindowSaturationIndicator => slidingWindow?.IsSaturated ?? false ? Colors.Green : Colors.Red;
 
         public MainWindow()
         {
+            DataContext = this;
             InitializeComponent();
             dispatcherTimer = new DispatcherTimer();
             dispatcherTimer.Tick += dispatcherTimer_Tick;
             dispatcherTimer.Interval = new TimeSpan(0, 0, 0);
+            slidingWindow = new SlidingWindow<int>(15);
         }
 
         private void dispatcherTimer_Tick(object sender, EventArgs e)
@@ -64,8 +58,12 @@ namespace LolLoginQueuePosition
                 {
                     Debug.WriteLine("{0} @ {1}", currentMatch.Groups[2].Value, currentMatch.Groups[1].Value);
                     currentPosLabel.Content = currentMatch.Groups[2].Value;
+
                     if (newPosition != 0)
                     {
+                        var positionDelta = lastPosition - newPosition;
+                        slidingWindow.Add(positionDelta);
+                        RaisePropertyChanged(nameof(SlidingWindowSaturationIndicator));
                         lastPosition = newPosition;
                     }
                     newPosition = Int32.Parse(currentMatch.Groups[2].Value);
@@ -96,16 +94,13 @@ namespace LolLoginQueuePosition
                 dispatcherTimer.Interval = new TimeSpan(0, 0, nextInt);
                 Debug.WriteLine("Next tick in {0}", newInterval + 10 - (lastTimestamp - newIntervalReadAt));
 
-                int positionsGained = lastPosition - newPosition;
+
+                var binomialAverage = Binomial.CalculateBinomialAverage(slidingWindow);
+
                 int timePassed = newPositionReadAt - lastPositionReadAt;
-                float factor = 1;
-                if (positionsGained != 0)
-                {
-                    factor = newPosition / positionsGained;
-                }
-                Debug.WriteLine("Gained {0} positions in {1} seconds.", positionsGained, timePassed);
-                float totalTime = factor * timePassed;
-                estimationLabel.Content = string.Format("{0} seconds ({1} minutes)", totalTime, totalTime / 60);
+                var totalTime = TimeSpan.FromSeconds(newPosition / binomialAverage * timePassed);
+
+                estimationLabel.Content = totalTime.ToString(@"hh\h\ mm\m\i\n\ ss\s\e\c");
                 lastPositionReadAt = newPositionReadAt;
                 lastPosition = newPosition;
             }
@@ -119,7 +114,8 @@ namespace LolLoginQueuePosition
             string[] drives = { "C", "G", "A", "B", "D", "E", "F", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
             string path = ":\\Riot Games\\PBE";
             string filePath = "\\Logs\\LeagueClient Logs\\";
-            foreach (string drive in drives) {
+            foreach (string drive in drives)
+            {
                 if (Directory.Exists(drive + path))
                 {
                     folderBrowserDialog.SelectedPath = drive + path;
@@ -154,6 +150,13 @@ namespace LolLoginQueuePosition
                     }
                 }
             }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged = delegate { };
+
+        private void RaisePropertyChanged(string propertyName)
+        {
+            PropertyChanged.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

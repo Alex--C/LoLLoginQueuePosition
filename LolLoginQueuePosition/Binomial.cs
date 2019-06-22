@@ -35,6 +35,7 @@ namespace LolLoginQueuePosition
         {
             var setSize = elements.Count - 1;
             if (setSize == 0) return elements.First();
+            if (setSize == -1) return 0;
 
             double binomialAverage = 0;
             for (var i = 0; i < elements.Count; i++)

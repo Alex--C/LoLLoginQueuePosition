@@ -57,7 +57,6 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Binomial.cs" />
-    <Compile Include="Properties\Annotations.cs" />
     <Compile Include="SlidingWindow.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

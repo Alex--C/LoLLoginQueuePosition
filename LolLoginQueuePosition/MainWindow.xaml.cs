@@ -56,17 +56,21 @@ namespace LolLoginQueuePosition
                 Match currentMatch = rCurrent.Match(line);
                 if (currentMatch.Success)
                 {
-                    Debug.WriteLine("{0} @ {1}", currentMatch.Groups[2].Value, currentMatch.Groups[1].Value);
-                    currentPosLabel.Content = currentMatch.Groups[2].Value;
+                    newPosition = Int32.Parse(currentMatch.Groups[2].Value);
+                    Debug.WriteLine("{0} @ {1}", newPosition, currentMatch.Groups[1].Value);
+                    currentPosLabel.Content = newPosition;
 
                     if (newPosition != 0)
                     {
-                        var positionDelta = lastPosition - newPosition;
-                        slidingWindow.Add(positionDelta);
-                        RaisePropertyChanged(nameof(SlidingWindowSaturationIndicator));
+                        if (lastPosition != 0)
+                        {
+                            var positionDelta = lastPosition - newPosition;
+                            slidingWindow.Add(positionDelta);
+                            RaisePropertyChanged(nameof(SlidingWindowSaturationIndicator));
+                        }
                         lastPosition = newPosition;
                     }
-                    newPosition = Int32.Parse(currentMatch.Groups[2].Value);
+                    
                     if (newPositionReadAt != 0)
                     {
                         lastPositionReadAt = newPositionReadAt;
@@ -98,9 +102,10 @@ namespace LolLoginQueuePosition
                 var binomialAverage = Binomial.CalculateBinomialAverage(slidingWindow);
 
                 int timePassed = newPositionReadAt - lastPositionReadAt;
-                var totalTime = TimeSpan.FromSeconds(newPosition / binomialAverage * timePassed);
-
-                estimationLabel.Content = totalTime.ToString(@"hh\h\ mm\m\i\n\ ss\s\e\c");
+                if (binomialAverage != 0) { 
+                    var totalTime = TimeSpan.FromSeconds(newPosition / (binomialAverage / timePassed));
+                    estimationLabel.Content = totalTime.ToString(@"hh\h\ mm\m\i\n\ ss\s\e\c");
+                }
                 lastPositionReadAt = newPositionReadAt;
                 lastPosition = newPosition;
             }
@@ -114,6 +119,7 @@ namespace LolLoginQueuePosition
             string[] drives = { "C", "G", "A", "B", "D", "E", "F", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
             string path = ":\\Riot Games\\PBE";
             string filePath = "\\Logs\\LeagueClient Logs\\";
+
             foreach (string drive in drives)
             {
                 if (Directory.Exists(drive + path))
@@ -127,6 +133,17 @@ namespace LolLoginQueuePosition
             if (result == System.Windows.Forms.DialogResult.OK)
             {
                 string selectedPath = folderBrowserDialog.SelectedPath;
+
+                
+                if (selectedPath.EndsWith("LeagueClient Logs"))
+                {
+                    filePath = "\\";
+                }
+                else if (selectedPath.EndsWith("Logs"))
+                {
+                    filePath = "\\LeagueClient Logs\\";
+                }
+
                 Debug.WriteLine(selectedPath + filePath);
                 if (Directory.Exists(selectedPath + filePath))
                 {
@@ -143,6 +160,8 @@ namespace LolLoginQueuePosition
                     if (mostRecentFileName != "")
                     {
                         FileStream fileStream = new FileStream(mostRecentFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                        fileStream.Seek(-10240, SeekOrigin.End);
+
                         logFileReader = new StreamReader(fileStream);
                         folderChooser.IsEnabled = false;
                         dispatcherTimer.Start();

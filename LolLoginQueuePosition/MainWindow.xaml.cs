@@ -116,15 +116,20 @@ namespace LolLoginQueuePosition
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
-            string[] drives = { "C", "G", "A", "B", "D", "E", "F", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
-            string path = ":\\Riot Games\\PBE";
-            string filePath = "\\Logs\\LeagueClient Logs\\";
+            string[] drives = { @"C:\", @"D:\", @"E:\", @"F:\", @"G:\",
+                                @"H:\", @"I:\", @"J:\", @"K:\", @"L:\",
+                                @"M:\", @"N:\", @"O:\", @"P:\", @"Q:\",
+                                @"R:\", @"S:\", @"T:\", @"U:\", @"V:\",
+                                @"W:\", @"X:\", @"Y:\", @"Z:\", @"A:\", @"B:\" };
+
+            string path = @"Riot Games\PBE\";
+            string filePath = @"Logs\LeagueClient Logs\";
 
             foreach (string drive in drives)
             {
-                if (Directory.Exists(drive + path))
+                if (Directory.Exists(Path.Combine(drive, path)))
                 {
-                    folderBrowserDialog.SelectedPath = drive + path;
+                    folderBrowserDialog.SelectedPath = Path.Combine(drive, path);
                     break;
                 }
             }
@@ -137,18 +142,20 @@ namespace LolLoginQueuePosition
                 
                 if (selectedPath.EndsWith("LeagueClient Logs"))
                 {
-                    filePath = "\\";
+                    filePath = @"\";
                 }
                 else if (selectedPath.EndsWith("Logs"))
                 {
-                    filePath = "\\LeagueClient Logs\\";
+                    filePath = @"\LeagueClient Logs\";
                 }
 
-                Debug.WriteLine(selectedPath + filePath);
-                if (Directory.Exists(selectedPath + filePath))
+                String logsPath = Path.Combine(selectedPath, filePath);
+
+                Debug.WriteLine(logsPath);
+                if (Directory.Exists(logsPath))
                 {
                     string mostRecentFileName = "";
-                    foreach (string fileName in Directory.EnumerateFiles(selectedPath + filePath, "*_LeagueClient.log"))
+                    foreach (string fileName in Directory.EnumerateFiles(logsPath, "*_LeagueClient.log"))
                     {
                         Debug.WriteLine(fileName);
                         if (string.Compare(fileName, mostRecentFileName) == 1)

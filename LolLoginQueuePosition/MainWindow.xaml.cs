@@ -57,7 +57,7 @@ namespace LolLoginQueuePosition
                 if (currentMatch.Success)
                 {
                     newPosition = Int32.Parse(currentMatch.Groups[2].Value);
-                    Debug.WriteLine("{0} @ {1}", newPosition, currentMatch.Groups[1].Value);
+                    Debug.WriteLine($"{newPosition} @ {currentMatch.Groups[1].Value}");
                     currentPosLabel.Content = newPosition;
 
                     if (newPosition != 0)
@@ -96,7 +96,9 @@ namespace LolLoginQueuePosition
                     nextInt = 1;
                 }
                 dispatcherTimer.Interval = new TimeSpan(0, 0, nextInt);
-                Debug.WriteLine("Next tick in {0}", newInterval + 10 - (lastTimestamp - newIntervalReadAt));
+
+                int nextTick = newInterval + 10 - (lastTimestamp - newIntervalReadAt);
+                Debug.WriteLine($"Next tick in {nextTick}");
 
 
                 var binomialAverage = Binomial.CalculateBinomialAverage(slidingWindow);

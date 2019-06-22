@@ -149,8 +149,8 @@ namespace LolLoginQueuePosition
                 }
 
                 String logsPath = Path.Combine(selectedPath, filePath);
-
                 Debug.WriteLine(logsPath);
+
                 if (Directory.Exists(logsPath))
                 {
                     string mostRecentFileName = "";

@@ -3,7 +3,7 @@ Kinda useless. Parses the client logs, displays current login queue position and
 
 Note that I have no time and absolutely no idea of WPF or C#, so the code is probably terrible and buggy.
 
-Direct Binary Download: https://github.com/Alex--C/LoLLoginQueuePosition/blob/master/dist/LolLoginQueuePosition.exe?raw=true
+Direct Binary Download: https://github.com/Alex--C/LoLLoginQueuePosition/releases/download/1.1/LolLoginQueuePosition.exe
 
 
 

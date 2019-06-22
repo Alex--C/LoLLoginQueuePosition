@@ -10,9 +10,6 @@ using System.Windows.Threading;
 
 namespace LolLoginQueuePosition
 {
-    /// <summary>
-    /// Interaktionslogik für MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
         private StreamReader logFileReader;
@@ -70,7 +67,7 @@ namespace LolLoginQueuePosition
                         }
                         lastPosition = newPosition;
                     }
-                    
+
                     if (newPositionReadAt != 0)
                     {
                         lastPositionReadAt = newPositionReadAt;
@@ -104,7 +101,8 @@ namespace LolLoginQueuePosition
                 var binomialAverage = Binomial.CalculateBinomialAverage(slidingWindow);
 
                 int timePassed = newPositionReadAt - lastPositionReadAt;
-                if (binomialAverage != 0) { 
+                if (binomialAverage != 0)
+                {
                     var totalTime = TimeSpan.FromSeconds(newPosition / (binomialAverage / timePassed));
                     estimationLabel.Content = totalTime.ToString(@"hh\h\ mm\m\i\n\ ss\s\e\c");
                 }
@@ -136,12 +134,11 @@ namespace LolLoginQueuePosition
                 }
             }
 
-            System.Windows.Forms.DialogResult result = folderBrowserDialog.ShowDialog();
+            DialogResult result = folderBrowserDialog.ShowDialog();
             if (result == System.Windows.Forms.DialogResult.OK)
             {
                 string selectedPath = folderBrowserDialog.SelectedPath;
 
-                
                 if (selectedPath.EndsWith("LeagueClient Logs"))
                 {
                     filePath = @"\";

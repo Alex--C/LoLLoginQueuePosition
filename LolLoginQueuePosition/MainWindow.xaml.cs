@@ -10,9 +10,6 @@ using System.Windows.Threading;
 
 namespace LolLoginQueuePosition
 {
-    /// <summary>
-    /// Interaktionslogik für MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
         private StreamReader logFileReader;
@@ -57,7 +54,7 @@ namespace LolLoginQueuePosition
                 if (currentMatch.Success)
                 {
                     newPosition = Int32.Parse(currentMatch.Groups[2].Value);
-                    Debug.WriteLine("{0} @ {1}", newPosition, currentMatch.Groups[1].Value);
+                    Debug.WriteLine($"{newPosition} @ {currentMatch.Groups[1].Value}");
                     currentPosLabel.Content = newPosition;
 
                     if (newPosition != 0)
@@ -70,7 +67,7 @@ namespace LolLoginQueuePosition
                         }
                         lastPosition = newPosition;
                     }
-                    
+
                     if (newPositionReadAt != 0)
                     {
                         lastPositionReadAt = newPositionReadAt;
@@ -96,13 +93,16 @@ namespace LolLoginQueuePosition
                     nextInt = 1;
                 }
                 dispatcherTimer.Interval = new TimeSpan(0, 0, nextInt);
-                Debug.WriteLine("Next tick in {0}", newInterval + 10 - (lastTimestamp - newIntervalReadAt));
+
+                int nextTick = newInterval + 10 - (lastTimestamp - newIntervalReadAt);
+                Debug.WriteLine($"Next tick in {nextTick}");
 
 
                 var binomialAverage = Binomial.CalculateBinomialAverage(slidingWindow);
 
                 int timePassed = newPositionReadAt - lastPositionReadAt;
-                if (binomialAverage != 0) { 
+                if (binomialAverage != 0)
+                {
                     var totalTime = TimeSpan.FromSeconds(newPosition / (binomialAverage / timePassed));
                     estimationLabel.Content = totalTime.ToString(@"hh\h\ mm\m\i\n\ ss\s\e\c");
                 }
@@ -116,39 +116,45 @@ namespace LolLoginQueuePosition
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
-            string[] drives = { "C", "G", "A", "B", "D", "E", "F", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z" };
-            string path = ":\\Riot Games\\PBE";
-            string filePath = "\\Logs\\LeagueClient Logs\\";
+            string[] drives = { @"C:\", @"D:\", @"E:\", @"F:\", @"G:\",
+                                @"H:\", @"I:\", @"J:\", @"K:\", @"L:\",
+                                @"M:\", @"N:\", @"O:\", @"P:\", @"Q:\",
+                                @"R:\", @"S:\", @"T:\", @"U:\", @"V:\",
+                                @"W:\", @"X:\", @"Y:\", @"Z:\", @"A:\", @"B:\" };
+
+            string path = @"Riot Games\PBE\";
+            string filePath = @"Logs\LeagueClient Logs\";
 
             foreach (string drive in drives)
             {
-                if (Directory.Exists(drive + path))
+                if (Directory.Exists(Path.Combine(drive, path)))
                 {
-                    folderBrowserDialog.SelectedPath = drive + path;
+                    folderBrowserDialog.SelectedPath = Path.Combine(drive, path);
                     break;
                 }
             }
 
-            System.Windows.Forms.DialogResult result = folderBrowserDialog.ShowDialog();
+            DialogResult result = folderBrowserDialog.ShowDialog();
             if (result == System.Windows.Forms.DialogResult.OK)
             {
                 string selectedPath = folderBrowserDialog.SelectedPath;
 
-                
                 if (selectedPath.EndsWith("LeagueClient Logs"))
                 {
-                    filePath = "\\";
+                    filePath = @"\";
                 }
                 else if (selectedPath.EndsWith("Logs"))
                 {
-                    filePath = "\\LeagueClient Logs\\";
+                    filePath = @"\LeagueClient Logs\";
                 }
 
-                Debug.WriteLine(selectedPath + filePath);
-                if (Directory.Exists(selectedPath + filePath))
+                String logsPath = Path.Combine(selectedPath, filePath);
+                Debug.WriteLine(logsPath);
+
+                if (Directory.Exists(logsPath))
                 {
                     string mostRecentFileName = "";
-                    foreach (string fileName in Directory.EnumerateFiles(selectedPath + filePath, "*_LeagueClient.log"))
+                    foreach (string fileName in Directory.EnumerateFiles(logsPath, "*_LeagueClient.log"))
                     {
                         Debug.WriteLine(fileName);
                         if (string.Compare(fileName, mostRecentFileName) == 1)

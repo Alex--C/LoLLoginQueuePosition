@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Forms;
@@ -17,6 +18,7 @@ namespace LolLoginQueuePosition
         private int lastPosition;
         private int lastPositionReadAt;
         private SlidingWindow<int> slidingWindow;
+        private Timer t;
 
         public Color SlidingWindowSaturationIndicator => slidingWindow?.IsSaturated ?? false ? Colors.Green : Colors.Red;
 
@@ -28,10 +30,36 @@ namespace LolLoginQueuePosition
             dispatcherTimer.Tick += dispatcherTimer_Tick;
             dispatcherTimer.Interval = new TimeSpan(0, 0, 0);
             slidingWindow = new SlidingWindow<int>(15);
+
+            t = new Timer();
+            t.Interval = (1000);
+            t.Tick += new EventHandler(t_tick);
+
+        }
+        public void t_tick(object sender, EventArgs e)
+        {
+            var time = estimationLabel.Content.ToString();
+            var pattern =
+            @"(?<time>\d+) \s* h(ours?)?       \s*
+            (?<time>\d+) \s* m(in(ute)?s?)?  \s*
+            (?<time>\d+) \s* s(ec(ond)?s?)?";
+            var options = RegexOptions.IgnorePatternWhitespace | RegexOptions.IgnoreCase;
+            var match = Regex.Match(time, pattern, options);
+            var items = match.Groups["time"].Captures.Cast<Capture>().Select(x => x.Value).ToList();
+
+            TimeSpan ts = new TimeSpan(int.Parse(items[0]), int.Parse(items[1]), int.Parse(items[2]));
+            var newts = ts.Subtract(new TimeSpan(0, 0, 1));
+            estimationLabel.Content = newts.ToString(@"hh\h\ mm\m\i\n\ ss\s\e\c");
+            if (newts.ToString(@"hh\h\ mm\m\i\n\ ss\s\e\c") == "00h 00min 00sec")
+            {
+                t.Stop();
+                estimationLabel.Content = "Logged in?";
+            }
         }
 
         private void dispatcherTimer_Tick(object sender, EventArgs e)
         {
+
             Debug.WriteLine("Tick");
             dispatcherTimer.Stop();
             string line;
@@ -109,9 +137,10 @@ namespace LolLoginQueuePosition
                 lastPositionReadAt = newPositionReadAt;
                 lastPosition = newPosition;
             }
-
+            t.Start();
             dispatcherTimer.Start();
         }
+
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
